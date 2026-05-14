@@ -3,7 +3,7 @@
    Cormorant Garamond (serif) + Jost (sans-serif)
 ═══════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap');
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;font-size:16px}
@@ -21,8 +21,8 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
   --muted:#9A9189;
   --brown:#5a5550;
   --white:#FFFFFF;
-  --font-serif:'Cormorant Garamond',serif;
-  --font-sans:'Jost',sans-serif;
+  --font-serif:'Cormorant Garamond','Noto Serif SC','Songti SC','STSong','PingFang SC','Microsoft YaHei',serif;
+  --font-sans:'Jost','Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Source Han Sans SC',sans-serif;
   --nav-height:72px;
   --max-width:1160px;
 }
@@ -442,3 +442,43 @@ textarea.form-input { resize: vertical; min-height: 120px; }
 /* ── section helpers ── */
 .section--white    { background: #fff; }
 .section--charcoal { background: var(--charcoal); }
+
+
+/* ── Chinese / mixed-language typography refinement (v7) ── */
+/* Ensure Chinese characters render with proper line-height and spacing alongside Latin text */
+:lang(zh), [lang="zh"] {
+  font-feature-settings: "palt" 1;
+  letter-spacing: 0.01em;
+}
+
+/* Body paragraphs with Chinese — slightly more breathing room */
+.body-text:lang(zh), .body-text[lang="zh"] {
+  line-height: 1.95;
+}
+
+/* Headings with Chinese — slightly tighter line-height than English */
+.section-h:lang(zh), .section-h[lang="zh"] {
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+
+/* Improve mixed Chinese + English in body */
+p, .body-text {
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* Better tracking for Chinese display headings */
+h1, h2, h3 {
+  font-feature-settings: "palt" 1;
+}
+
+/* Mobile font sizing — prevent oversized Chinese */
+@media (max-width: 768px) {
+  .section-h { font-size: clamp(24px, 5.5vw, 36px); line-height: 1.22; }
+  .body-text { font-size: 14px; line-height: 1.86; }
+}
+@media (max-width: 480px) {
+  .section-h { font-size: clamp(22px, 6vw, 30px); }
+  .body-text { font-size: 13.5px; line-height: 1.84; }
+}
