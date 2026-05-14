@@ -1,241 +1,211 @@
-# ONE MORE TRAVEL / 玩陌旅行 — Official Website
+# ONE MORE TRAVEL / 玩陌旅行
 
-A boutique luxury travel company website built with **Next.js 14** (Pages Router).  
-Bilingual (English / Simplified Chinese), responsive, and ready to deploy on **Vercel**.
-
----
-
-## Project Structure
-
-```
-onemoretravel/
-├── pages/
-│   ├── _app.js          ← Root layout: Nav + Footer + Language Provider
-│   ├── _document.js     ← Custom HTML head (fonts, meta)
-│   ├── index.js         ← Home page
-│   ├── about.js         ← About Us
-│   ├── journeys.js      ← Bespoke Journeys
-│   ├── hotels.js        ← Luxury Hotels & Villas
-│   ├── destinations.js  ← Destinations
-│   ├── concierge.js     ← Private Transfers & Concierge
-│   ├── advantages.js    ← Our Advantages (Why Us)
-│   └── contact.js       ← Contact
-│
-├── components/
-│   ├── Nav.js           ← Sticky navigation (desktop + mobile)
-│   ├── Footer.js        ← Site footer
-│   ├── Label.js         ← Gold section label component
-│   ├── PageHero.js      ← Short hero for inner pages
-│   └── ContactForm.js   ← Enquiry form with success state
-│
-├── context/
-│   └── LangContext.js   ← Language state (EN / ZH)
-│
-├── lib/
-│   └── content.js       ← All bilingual text + Unsplash image IDs ← EDIT HERE
-│
-├── styles/
-│   └── globals.css      ← All styles (design tokens, layout, responsive)
-│
-├── public/              ← Static assets (add favicon.ico here)
-├── next.config.js
-├── package.json
-└── README.md
-```
+Boutique luxury travel website — built with Next.js 14 (Pages Router), bilingual EN/中文, fully static-generated, 118 pre-rendered routes.
 
 ---
 
-## 1 · Run Locally
-
-**Prerequisites:** Node.js 18+ and npm (or yarn / pnpm)
+## Quick Start
 
 ```bash
-# 1. Enter the project folder
-cd onemoretravel
-
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Start the development server
+# Run local development server (no email setup needed to view the site)
 npm run dev
-
-# 4. Open in browser
 # → http://localhost:3000
-```
 
-For a production build locally:
-
-```bash
+# Build for production
 npm run build
+
+# Start production server locally
 npm start
 ```
 
 ---
 
-## 2 · Deploy to Vercel
+## What's Inside
 
-### Option A — Vercel CLI (recommended)
+| Section | Routes |
+|---|---|
+| Home | 1 |
+| About | 1 |
+| Destinations | 1 index + 10 detail = 11 |
+| Hotels & Lodges | 1 index + 20 detail = 21 |
+| Travel Styles | 1 index + 8 detail = 9 |
+| Extraordinary Experiences | 1 index + 6 detail = 7 |
+| Journeys | 1 index + 8 detail = 9 |
+| **Journal** | 1 index + **58 articles** = 59 |
+| Tailor-Made Inquiry | 1 |
+| Contact (redirects to /inquiry) | 1 |
+| **Total static pages** | **118** |
+
+---
+
+## Inquiry Form Setup (Required for Production)
+
+The form at `/inquiry` POSTs to `/api/inquiry`, which sends email via **Resend**.
+
+**Without setting up Resend, the form will return a "service not configured" error.** The form will still display and validate locally.
+
+To enable email sending, see `SETUP-EMAIL.md`. Short version:
+
+1. Sign up at https://resend.com (free tier: 100/day, 3,000/month)
+2. Create API key in dashboard
+3. Copy `.env.local.example` → `.env.local`
+4. Fill in `RESEND_API_KEY`
+5. Run `npm run dev` and submit the form
+
+For Vercel deployment, add the same env vars in Project Settings.
+
+---
+
+## File Architecture
+
+```
+/lib/                      Data layer — every page reads from here
+  images.js                Master image registry (140 entries with alt + status)
+  content.js               Nav, footer, homepage, about, inquiry content
+  destinations.js          10 destinations
+  hotels.js                20 hotels (13 brands + safari/villas/wellness)
+  travelStyles.js          8 travel styles
+  experiences.js           6 extraordinary experiences
+  journeys.js              8 journey itineraries
+  journal.js               58 journal articles, 12 categories
+
+/components/               Reusable components
+  Nav.js                   9-item nav with mobile menu
+  Footer.js                4-column footer
+  SafeImg.js               <img> with branded SVG fallback (no broken icons)
+  PageHero.js              Hero header for all interior pages
+  Label.js                 Section eyebrow label
+  InquiryForm.js           Working form: validation + loading + success + error
+  DestinationCard.js, HotelBrandCard.js, TravelStyleCard.js,
+  ExperienceCard.js, JourneyCard.js, JournalCard.js
+
+/pages/                    Next.js routing
+  _app.js, _document.js
+  index.js                 Homepage
+  about.js
+  inquiry.js, contact.js (redirects)
+  destinations/            index.js + [slug].js
+  hotels/                  index.js + [slug].js
+  travel-styles/           index.js + [slug].js
+  experiences/             index.js + [slug].js
+  journeys/                index.js + [slug].js
+  journal/                 index.js + [slug].js — with category filter
+  api/inquiry.js           Resend email handler
+
+/context/LangContext.js    Bilingual EN/中文 toggle + html lang attr
+/styles/globals.css        Design system + Chinese typography refinements
+/public/images/            Image folder structure (placeholders use Unsplash CDN)
+```
+
+---
+
+## Image System
+
+All images currently load from Unsplash CDN as temporary placeholders. The registry in `lib/images.js` has 140 keyed entries, each with:
+
+```js
+'dest-italy': {
+  id: 'photo-1523906834658-6e24ef2386f9',
+  alt: 'Cinque Terre colourful village on Italian Riviera cliff',
+  category: 'destination',
+  note: 'Italy — coastal village. Replace with approved media kit asset.',
+}
+```
+
+### Replacing an Image
+
+1. Drop your file into `/public/images/destinations/italy.jpg` (or wherever)
+2. In `lib/images.js`, find the registry key (e.g. `'dest-italy'`) and add:
+   ```js
+   url: '/images/destinations/italy.jpg',
+   ```
+3. Update `pic()` function at the bottom of `lib/images.js` — uncomment the `if (entry?.url) return entry.url;` line (currently only `id` is used).
+4. Set `status: 'approved'` in that entry.
+
+### No Broken Images
+
+Every image renders through `<SafeImg>`. If a URL 404s, it falls back to a branded ONE MORE TRAVEL SVG placeholder — never a broken-image icon.
+
+---
+
+## Typography
+
+| Use | Font Stack |
+|---|---|
+| English headings | Cormorant Garamond → Noto Serif SC → Songti SC → fallbacks |
+| English body | Jost → Noto Sans SC → PingFang SC → fallbacks |
+| Chinese paragraphs | Noto Sans SC / PingFang SC with refined `:lang(zh)` line-height |
+| Chinese headings | Noto Serif SC / Songti SC with tighter letter-spacing |
+
+Mobile sizes are reduced via media queries to prevent oversized Chinese characters on narrow screens.
+
+The `<html>` element gets `lang="en"` or `lang="zh"` automatically based on the user's choice (which persists across sessions via localStorage).
+
+---
+
+## Brand & Voice
+
+Tone: human luxury travel advisor, not a tourism board.
+
+Headings and modules use phrases like:
+- "Our Thoughts"
+- "If It Were Us"
+- "Best For"
+- "Suggested Pace"
+- "Curated Inspirations"
+
+NOT phrases like:
+- "Properties We Frequently Arrange" (sounds restrictive)
+- "Unforgettable journeys await" (cliché)
+
+---
+
+## Factual Accuracy Notes
+
+We treat the following as known facts:
+
+- **Aman Kuda Huraa** does not exist. Kuda Huraa is Four Seasons. Any reference is a bug.
+- **Aman Maldives** is a future opening in Vaavu Atoll. It is marked "Coming Soon / Future Opening" — never recommended as currently operating.
+- The Maldives hotels we recommend as current operating: Soneva Fushi, Cheval Blanc Randheli, JOALI Maldives, Four Seasons Landaa Giraavaru, Four Seasons Kuda Huraa, Patina Maldives, The St. Regis Maldives Vommuli, One&Only Reethi Rah.
+
+---
+
+## Deployment (Vercel)
 
 ```bash
-# Install Vercel CLI globally (once)
-npm install -g vercel
+# After local changes:
+git add .
+git commit -m "your message"
+git push
 
-# Deploy from inside the project folder
-cd onemoretravel
-vercel
-
-# Follow the prompts:
-# - Link to your Vercel account
-# - Accept defaults for Next.js (auto-detected)
-# - Your site is live at a .vercel.app URL
+# In Vercel dashboard:
+# Settings → Environment Variables → Add:
+#   RESEND_API_KEY=re_xxxx
+#   INQUIRY_TO_EMAIL=omtravel@onemoretravel.com
+#   RESEND_FROM_EMAIL=omtravel@onemoretravel.com  (after domain verification)
 ```
 
-### Option B — GitHub → Vercel Dashboard
-
-1. Push the `onemoretravel` folder to a **GitHub repository**
-2. Log in at [vercel.com](https://vercel.com)
-3. Click **"Add New Project"**
-4. Import your GitHub repository
-5. Vercel auto-detects Next.js — click **Deploy**
-6. Done. Every `git push` triggers an automatic redeploy.
+Vercel auto-deploys on push to main.
 
 ---
 
-## 3 · Connect the Custom Domain `www.onemoretravel.com`
+## Versioning
 
-After deploying to Vercel:
-
-1. Go to your project in the **Vercel Dashboard**
-2. Click **Settings → Domains**
-3. Add `www.onemoretravel.com` (and optionally `onemoretravel.com`)
-4. Vercel shows you two DNS records to add:
-   - **Type:** `CNAME`  **Name:** `www`  **Value:** `cname.vercel-dns.com`
-   - **Type:** `A`  **Name:** `@`  **Value:** `76.76.21.21`
-5. Log in to your domain registrar (e.g. Cloudflare, GoDaddy, Namecheap)
-6. Add the DNS records above
-7. Wait 10–60 minutes for DNS to propagate
-8. Vercel automatically provisions an SSL certificate (HTTPS)
+| Version | Changes |
+|---|---|
+| v4 | Full site build, 9-item nav, all routes |
+| v5 | Working email, SafeImg, image registry |
+| v6 | Image audit, Bvlgari, factual corrections |
+| v7 | 58 journal articles, 7 new hotel brands, Aman Maldives Coming Soon, Chinese font stack |
+| v8 | All 58 journal articles now have full body content (no placeholders), 11 priority images replaced (calmer hero, Chengdu-feeling about, emotional family, deduplicated safari/wellness/villas), refined article-page typography for Chinese readability |
+| v9 | Image-only correction pass: 27 images replaced to fix topic mismatches (Family vs Celebration, Cheval Blanc, Belmond, Luxury Rail, Expedition, Chengdu origin story, About Us sections); fixed data-mapping bugs in travelStyles.js and experiences.js |
+| **v10** | Full image-only refinement pass: every one of 140 registry entries now uses a confirmed-working Unsplash ID (no more dark placeholders, no broken IDs that render unexpected content like "toys for Aman" or "Canada flag for Bvlgari"); all 22 user-flagged problems matched to a topic-accurate confirmed-good ID; journal article images rationalised to topic |
 
 ---
 
-## 4 · Update Contact Information
+## License
 
-Open **`lib/content.js`** and find the `contact` section.  
-Update emails, WeChat, website, and locations there.
-
-Also update the **Footer** contact details directly in **`components/Footer.js`** (lines ~40–48).
-
-To update the contact form backend (currently front-end only with success state):  
-Edit **`components/ContactForm.js`** — replace the `handleSubmit` function with a real API call, e.g. [Formspree](https://formspree.io), [Resend](https://resend.com), or a Next.js API route.
-
----
-
-## 5 · Update Images
-
-All images are sourced from **Unsplash** (free commercial use, no attribution required).
-
-Open **`lib/content.js`** → find the `IMAGES` object at the top of the file.  
-Each key maps a section to an Unsplash photo ID.
-
-**To swap an image:**
-1. Go to [unsplash.com](https://unsplash.com) and find a photo you like
-2. Copy the photo ID from the URL (e.g. `photo-1520250497591-112f2f40a3f4`)
-3. Replace the corresponding value in `IMAGES` in `lib/content.js`
-
-**To use your own photography:**
-1. Place images in the `public/` folder (e.g. `public/images/hero.jpg`)
-2. Update `lib/content.js` → replace the Unsplash helper call with `/images/hero.jpg`
-3. In `lib/content.js`, update the `pic()` function or bypass it per image
-
----
-
-## 6 · Update Page Content
-
-All bilingual text lives in **`lib/content.js`** under the `CONTENT` object.
-
-- Each bilingual value has the shape: `{ en: '...', zh: '...' }`
-- Update English (`en`) and Chinese (`zh`) values independently
-- Page structure changes go in the individual page files under `pages/`
-
----
-
-## 7 · Add a Favicon
-
-Place a `favicon.ico` file in the **`public/`** folder.  
-It's already referenced in `pages/_document.js`.
-
-For best results, also add:
-- `public/apple-touch-icon.png` (180×180)
-- `public/favicon-32x32.png`
-
----
-
-## 8 · Add a Real Form Backend
-
-The contact form currently shows a success state on submit without sending data.
-
-**Recommended options:**
-
-### Formspree (zero backend)
-```js
-// In components/ContactForm.js
-async function handleSubmit(e) {
-  e.preventDefault();
-  await fetch('https://formspree.io/f/YOUR_FORM_ID', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(form),
-  });
-  setSent(true);
-}
-```
-
-### Next.js API Route + Resend
-Create `pages/api/contact.js`:
-```js
-import { Resend } from 'resend';
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
-  await resend.emails.send({
-    from: 'website@onemoretravel.com',
-    to: 'omtravel@onemoretravel.com',
-    subject: 'New Enquiry from Website',
-    text: JSON.stringify(req.body, null, 2),
-  });
-  res.status(200).json({ ok: true });
-}
-```
-
----
-
-## Tech Stack
-
-| Layer      | Technology |
-|------------|------------|
-| Framework  | Next.js 14 (Pages Router) |
-| Styling    | Global CSS (custom design system, no Tailwind) |
-| Fonts      | Google Fonts — Cormorant Garamond + Jost |
-| Images     | Unsplash (free commercial use) |
-| Language   | React Context API |
-| Deployment | Vercel |
-
----
-
-## Design Tokens (colors)
-
-| Token        | Value     | Usage |
-|-------------|-----------|-------|
-| `--ivory`   | `#F8F5EE` | Page background |
-| `--gold`    | `#C4A35A` | Accents, labels |
-| `--green`   | `#1B2D24` | Dark sections, buttons |
-| `--charcoal`| `#1A1918` | Text, dark sections |
-| `--stone`   | `#EAE3D8` | Alternate section bg |
-| `--muted`   | `#9A9189` | Secondary text |
-
-All tokens are in `styles/globals.css` under `:root`.
-
----
-
-*ONE MORE TRAVEL / 玩陌旅行 · Chengdu · Melbourne · www.onemoretravel.com*
+Proprietary — © 2025 ONE MORE TRAVEL / 玩陌旅行
